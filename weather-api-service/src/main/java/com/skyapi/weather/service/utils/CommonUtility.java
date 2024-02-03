@@ -13,8 +13,6 @@ public class CommonUtility {
       ipAddress = request.getRemoteAddr();
     }
 
-    log.info("IP Address: {}", ipAddress);
-
     return ipAddress;
   }
 }
