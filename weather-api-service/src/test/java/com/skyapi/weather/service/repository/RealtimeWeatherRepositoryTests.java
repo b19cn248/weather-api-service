@@ -44,4 +44,24 @@ class RealtimeWeatherRepositoryTests {
     assertThat(savedWeather.getWindSpeed()).isEqualTo(10);
     assertThat(savedWeather.getStatus()).isEqualTo("Sunny");
   }
+
+  @Test
+  void testFindByCountryCodeAndCityNotFound() {
+    String countryCode = "JP";
+    String city = "Tokyo";
+
+    RealtimeWeather weather = repository.findByCountryCodeAndCity(countryCode, city);
+
+    assertThat(weather).isNull();
+  }
+
+  @Test
+  void testFindByCountryCodeAndCitySuccess() {
+    String countryCode = "US";
+    String city = "New York City";
+
+    RealtimeWeather weather = repository.findByCountryCodeAndCity(countryCode, city);
+
+    assertThat(weather).isNotNull();
+  }
 }

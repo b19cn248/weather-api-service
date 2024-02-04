@@ -19,9 +19,13 @@ import java.util.Collections;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.containsString;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
 
 @WebMvcTest(LocationController.class)
 class LocationControllerTests {
@@ -84,6 +88,7 @@ class LocationControllerTests {
           .andExpect(status().isNoContent())
           .andDo(print());
   }
+
 
   @Test
   void testListShouldReturn200OK() throws Exception {
@@ -154,7 +159,6 @@ class LocationControllerTests {
 
   @Test
   void testValidateRequestBodyLocationCode() throws Exception {
-
     String bodyContent = objectMapper.writeValueAsString(FAKE_REQUEST_INVALID);
 
     MvcResult result = mockMvc.perform(post(END_POINT_PATH)
@@ -165,10 +169,12 @@ class LocationControllerTests {
 
     String response = result.getResponse().getContentAsString();
 
-    assertThat(response).contains("Code is mandatory");
-    assertThat(response).contains("City name is mandatory");
-
+    assertThat(response, allOf(
+          containsString("Code is mandatory"),
+          containsString("City name is mandatory")
+    ));
   }
+
 
   @Test
   void testValidateRequestBodyLocationCodeLength() throws Exception {

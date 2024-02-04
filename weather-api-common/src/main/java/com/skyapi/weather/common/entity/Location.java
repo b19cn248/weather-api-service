@@ -1,5 +1,6 @@
 package com.skyapi.weather.common.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -35,5 +36,6 @@ public class Location {
 
     @OneToOne(mappedBy = "location", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     @PrimaryKeyJoinColumn
+    @JsonIgnore
     private RealtimeWeather realtimeWeather;
 }

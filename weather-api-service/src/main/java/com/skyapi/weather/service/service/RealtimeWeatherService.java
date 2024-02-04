@@ -1,0 +1,9 @@
+package com.skyapi.weather.service.service;
+
+import com.skyapi.weather.common.dto.response.RealTimeWeatherResponse;
+import com.skyapi.weather.common.entity.Location;
+import com.skyapi.weather.common.entity.RealtimeWeather;
+
+public interface RealtimeWeatherService {
+  RealTimeWeatherResponse getByLocation(Location location);
+}
