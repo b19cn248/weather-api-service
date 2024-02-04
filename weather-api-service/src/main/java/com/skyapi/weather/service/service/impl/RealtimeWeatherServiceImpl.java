@@ -5,6 +5,7 @@ import com.skyapi.weather.common.dto.response.RealTimeWeatherResponse;
 import com.skyapi.weather.common.entity.Location;
 import com.skyapi.weather.common.entity.RealtimeWeather;
 import com.skyapi.weather.service.exception.LocationNotFoundException;
+import com.skyapi.weather.service.repository.LocationRepository;
 import com.skyapi.weather.service.repository.RealTimeWeatherRepository;
 import com.skyapi.weather.service.service.RealtimeWeatherService;
 import jakarta.transaction.Transactional;
@@ -20,6 +21,7 @@ import java.util.Date;
 public class RealtimeWeatherServiceImpl implements RealtimeWeatherService {
 
   private final RealTimeWeatherRepository repository;
+  private final LocationRepository locationRepository;
 
   @Override
   public RealTimeWeatherResponse getByLocation(Location location) {
@@ -59,16 +61,22 @@ public class RealtimeWeatherServiceImpl implements RealtimeWeatherService {
   public RealTimeWeatherResponse update(String locationCode, RealtimeWeatherRequest request) {
     log.info("Updating weather for location code: {}", locationCode);
 
-    RealtimeWeather weather = repository.findByLocationCode(locationCode);
+    Location location = locationRepository.findByCode(locationCode).orElseThrow(
+          () -> new LocationNotFoundException(locationCode));
 
-    if (weather == null) {
-      log.info("Weather not found for location code: {}", locationCode);
-      throw new LocationNotFoundException("Weather not found for location code: " + locationCode);
+
+    if (location.getRealtimeWeather() == null) {
+      RealtimeWeather weather = dto2Entity(request);
+      weather.setLocation(location);
+      location.setRealtimeWeather(weather);
+      Location updatedLocation = locationRepository.save(location);
+      return entity2DTO(updatedLocation.getRealtimeWeather());
     }
+
 
     RealtimeWeather updatedWeather = dto2Entity(request);
 
-    updatedWeather.setLocation(weather.getLocation());
+    updatedWeather.setLocation(location);
 
     RealtimeWeather savedWeather = repository.save(updatedWeather);
 
