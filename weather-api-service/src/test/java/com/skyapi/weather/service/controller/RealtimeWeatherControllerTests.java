@@ -16,6 +16,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 
@@ -87,18 +88,62 @@ class RealtimeWeatherControllerTests {
     Mockito.when(realtimeWeatherService.getByLocation(location))
           .thenReturn(entity2DTO(realtimeWeather));
 
+    String expectedLocation = location.getCityName() + ", " + location.getCountryName();
+
     mockMvc.perform(get(END_POINT_PATH))
           .andExpect(status().isOk())
+          .andExpect(jsonPath("$.location", org.hamcrest.Matchers.is(expectedLocation)))
           .andDo(print());
   }
 
   private RealTimeWeatherResponse entity2DTO(RealtimeWeather weather) {
     return RealTimeWeatherResponse.builder()
+          .location(weather.getLocation().getCityName() + ", " + weather.getLocation().getCountryName())
           .temperature(weather.getTemperature())
           .humidity(weather.getHumidity())
           .precipitation(weather.getPrecipitation())
           .windSpeed(weather.getWindSpeed())
+          .status(weather.getStatus())
           .lastUpdated(weather.getLastUpdated())
           .build();
+  }
+
+  @Test
+  void testGetRealtimeWeatherByLocationCodeShouldReturn404NotFound() throws Exception {
+    Mockito.when(realtimeWeatherService.getByLocationCode("ABC_USA"))
+          .thenThrow(new LocationNotFoundException("Location not found"));
+
+    mockMvc.perform(get(END_POINT_PATH + "/ABC_USA"))
+          .andExpect(status().isNotFound())
+          .andDo(print());
+  }
+
+  @Test
+  void testGetRealtimeWeatherByLocationCodeShouldReturn200Ok() throws Exception {
+    Location location = Location.builder()
+          .code("NYC_USA")
+          .cityName("City")
+          .regionName("Region")
+          .countryName("Country")
+          .countryCode("CO")
+          .enabled(true)
+          .trashed(false)
+          .build();
+
+    RealtimeWeather realtimeWeather = RealtimeWeather.builder()
+          .temperature(25)
+          .humidity(33)
+          .precipitation(1013)
+          .build();
+
+    realtimeWeather.setLocation(location);
+    location.setRealtimeWeather(realtimeWeather);
+
+    Mockito.when(realtimeWeatherService.getByLocationCode("NYC_USA"))
+          .thenReturn(entity2DTO(realtimeWeather));
+
+    mockMvc.perform(get(END_POINT_PATH + "/NYC_USA"))
+          .andExpect(status().isOk())
+          .andDo(print());
   }
 }

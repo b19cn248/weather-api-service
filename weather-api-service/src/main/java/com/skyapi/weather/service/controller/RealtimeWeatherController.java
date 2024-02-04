@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -43,6 +44,17 @@ public class RealtimeWeatherController {
       return ResponseEntity.badRequest().build();
     } catch (LocationNotFoundException e) {
       log.error("Error getting weather for location", e);
+      return ResponseEntity.notFound().build();
+    }
+  }
+
+  @GetMapping("/{locationCode}")
+  public ResponseEntity<RealTimeWeatherResponse> getRealtimeWeatherByLocationCode(@PathVariable String locationCode) {
+    try {
+      RealTimeWeatherResponse weather = realtimeWeatherService.getByLocationCode(locationCode);
+      return ResponseEntity.ok(weather);
+    } catch (LocationNotFoundException e) {
+      log.error("Error getting weather for location code: {}", locationCode, e);
       return ResponseEntity.notFound().build();
     }
   }

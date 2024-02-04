@@ -6,4 +6,6 @@ import com.skyapi.weather.common.entity.RealtimeWeather;
 
 public interface RealtimeWeatherService {
   RealTimeWeatherResponse getByLocation(Location location);
+
+  RealTimeWeatherResponse getByLocationCode(String locationCode);
 }

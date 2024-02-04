@@ -36,15 +36,29 @@ public class RealtimeWeatherServiceImpl implements RealtimeWeatherService {
     return entity2DTO(weather);
   }
 
+  @Override
+  public RealTimeWeatherResponse getByLocationCode(String locationCode) {
+    log.info("Getting weather for location code: {}", locationCode);
+
+    RealtimeWeather weather = repository.findByLocationCode(locationCode);
+
+    if (weather == null) {
+      log.info("Weather not found for location code: {}", locationCode);
+      throw new LocationNotFoundException("Weather not found for location code: " + locationCode);
+    }
+
+    return entity2DTO(weather);
+  }
+
   private RealTimeWeatherResponse entity2DTO(RealtimeWeather weather) {
     return RealTimeWeatherResponse.builder()
-          .location(weather.getLocation().getCityName() + ", " + weather.getLocation().getCountryCode())
-                .temperature(weather.getTemperature())
-                .humidity(weather.getHumidity())
-                .precipitation(weather.getPrecipitation())
-                .windSpeed(weather.getWindSpeed())
-                .status(weather.getStatus())
-                .lastUpdated(weather.getLastUpdated())
-                .build();
+          .location(weather.getLocation().getCityName() + ", " + weather.getLocation().getCountryName())
+          .temperature(weather.getTemperature())
+          .humidity(weather.getHumidity())
+          .precipitation(weather.getPrecipitation())
+          .windSpeed(weather.getWindSpeed())
+          .status(weather.getStatus())
+          .lastUpdated(weather.getLastUpdated())
+          .build();
   }
 }
