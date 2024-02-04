@@ -1,14 +1,18 @@
 package com.skyapi.weather.service.service.impl;
 
+import com.skyapi.weather.common.dto.request.RealtimeWeatherRequest;
 import com.skyapi.weather.common.dto.response.RealTimeWeatherResponse;
 import com.skyapi.weather.common.entity.Location;
 import com.skyapi.weather.common.entity.RealtimeWeather;
 import com.skyapi.weather.service.exception.LocationNotFoundException;
 import com.skyapi.weather.service.repository.RealTimeWeatherRepository;
 import com.skyapi.weather.service.service.RealtimeWeatherService;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+
+import java.util.Date;
 
 @Service
 @Slf4j
@@ -50,6 +54,27 @@ public class RealtimeWeatherServiceImpl implements RealtimeWeatherService {
     return entity2DTO(weather);
   }
 
+  @Override
+  @Transactional
+  public RealTimeWeatherResponse update(String locationCode, RealtimeWeatherRequest request) {
+    log.info("Updating weather for location code: {}", locationCode);
+
+    RealtimeWeather weather = repository.findByLocationCode(locationCode);
+
+    if (weather == null) {
+      log.info("Weather not found for location code: {}", locationCode);
+      throw new LocationNotFoundException("Weather not found for location code: " + locationCode);
+    }
+
+    RealtimeWeather updatedWeather = dto2Entity(request);
+
+    updatedWeather.setLocation(weather.getLocation());
+
+    RealtimeWeather savedWeather = repository.save(updatedWeather);
+
+    return entity2DTO(savedWeather);
+  }
+
   private RealTimeWeatherResponse entity2DTO(RealtimeWeather weather) {
     return RealTimeWeatherResponse.builder()
           .location(weather.getLocation().getCityName() + ", " + weather.getLocation().getCountryName())
@@ -59,6 +84,17 @@ public class RealtimeWeatherServiceImpl implements RealtimeWeatherService {
           .windSpeed(weather.getWindSpeed())
           .status(weather.getStatus())
           .lastUpdated(weather.getLastUpdated())
+          .build();
+  }
+
+  private RealtimeWeather dto2Entity(RealtimeWeatherRequest request) {
+    return RealtimeWeather.builder()
+          .temperature(request.getTemperature())
+          .humidity(request.getHumidity())
+          .precipitation(request.getPrecipitation())
+          .windSpeed(request.getWindSpeed())
+          .status(request.getStatus())
+          .lastUpdated(new Date())
           .build();
   }
 }

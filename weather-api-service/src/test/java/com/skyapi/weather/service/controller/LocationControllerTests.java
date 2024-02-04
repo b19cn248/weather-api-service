@@ -18,7 +18,6 @@ import org.springframework.test.web.servlet.MvcResult;
 import java.util.Collections;
 import java.util.List;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.containsString;
@@ -190,14 +189,13 @@ class LocationControllerTests {
 
   @Test
   void testValidateRequestBodyAllFieldsInvalid() throws Exception {
-
     LocationRequest request = FAKE_REQUEST_INVALID;
 
     request.setRegionName("");
     request.setCountryCode("");
     request.setCountryName("");
 
-    String bodyContent = objectMapper.writeValueAsString(FAKE_REQUEST_INVALID);
+    String bodyContent = objectMapper.writeValueAsString(request);
 
     MvcResult mvcResult = mockMvc.perform(post(END_POINT_PATH)
                 .contentType("application/json").content(bodyContent))
@@ -207,11 +205,13 @@ class LocationControllerTests {
 
     String response = mvcResult.getResponse().getContentAsString();
 
-    assertThat(response).contains("Code is mandatory");
-    assertThat(response).contains("City name is mandatory");
-    assertThat(response).contains("Region name must be between 3 and 128 characters");
-    assertThat(response).contains("Country name must be between 3 and 64 characters");
-    assertThat(response).contains("Country code must be 2 characters");
+    assertThat(response, allOf(
+          containsString("Code is mandatory"),
+          containsString("City name is mandatory"),
+          containsString("Region name must be between 3 and 128 characters"),
+          containsString("Country name must be between 3 and 64 characters"),
+          containsString("Country code must be 2 characters")
+    ));
   }
 
   @Test

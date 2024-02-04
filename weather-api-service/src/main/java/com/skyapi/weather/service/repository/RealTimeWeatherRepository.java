@@ -1,7 +1,9 @@
 package com.skyapi.weather.service.repository;
 
 import com.skyapi.weather.common.entity.RealtimeWeather;
+import jakarta.transaction.Transactional;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 
 public interface RealTimeWeatherRepository extends JpaRepository<RealtimeWeather, String> {
@@ -11,4 +13,5 @@ public interface RealTimeWeatherRepository extends JpaRepository<RealtimeWeather
 
   @Query(value = "SELECT r FROM RealtimeWeather r WHERE r.location.code = ?1 AND r.location.trashed = false")
   RealtimeWeather findByLocationCode(String locationCode);
+
 }

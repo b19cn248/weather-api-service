@@ -1,5 +1,6 @@
 package com.skyapi.weather.service.controller;
 
+import com.skyapi.weather.common.dto.request.RealtimeWeatherRequest;
 import com.skyapi.weather.common.dto.response.RealTimeWeatherResponse;
 import com.skyapi.weather.common.entity.Location;
 import com.skyapi.weather.service.exception.GeolocationNotFoundException;
@@ -8,13 +9,11 @@ import com.skyapi.weather.service.service.GeolocationService;
 import com.skyapi.weather.service.service.RealtimeWeatherService;
 import com.skyapi.weather.service.utils.CommonUtility;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("api/v1/realtime")
@@ -55,6 +54,20 @@ public class RealtimeWeatherController {
       return ResponseEntity.ok(weather);
     } catch (LocationNotFoundException e) {
       log.error("Error getting weather for location code: {}", locationCode, e);
+      return ResponseEntity.notFound().build();
+    }
+  }
+
+  @PutMapping("/{locationCode}")
+  public ResponseEntity<RealTimeWeatherResponse> updateRealtimeWeather(
+        @PathVariable String locationCode,
+        @RequestBody @Valid RealtimeWeatherRequest request
+  ) {
+    try {
+      RealTimeWeatherResponse weather = realtimeWeatherService.update(locationCode, request);
+      return ResponseEntity.ok(weather);
+    } catch (LocationNotFoundException e) {
+      log.error("Error updating weather for location code: {}", locationCode, e);
       return ResponseEntity.notFound().build();
     }
   }
