@@ -8,6 +8,7 @@ import com.skyapi.weather.service.exception.LocationNotFoundException;
 import com.skyapi.weather.service.service.GeolocationService;
 import com.skyapi.weather.service.service.RealtimeWeatherService;
 import com.skyapi.weather.service.utils.CommonUtility;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("api/v1/realtime")
 @RequiredArgsConstructor
 @Slf4j
+@Tag(name = "REALTIME_WEATHER")
 public class RealtimeWeatherController {
 
   private final RealtimeWeatherService realtimeWeatherService;
