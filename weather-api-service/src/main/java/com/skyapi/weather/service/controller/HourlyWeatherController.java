@@ -9,6 +9,7 @@ import com.skyapi.weather.service.exception.LocationNotFoundException;
 import com.skyapi.weather.service.service.GeolocationService;
 import com.skyapi.weather.service.service.HourlyWeatherService;
 import com.skyapi.weather.service.utils.CommonUtility;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -19,11 +20,14 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+import static com.skyapi.weather.service.constant.CommonConstant.Constants.HOUR_HEADING;
+
 @RestController
 @RequestMapping("/api/v1/hourly")
 @RequiredArgsConstructor
 @Slf4j
 @Validated
+@Tag(name = "HOURLY_WEATHER")
 public class HourlyWeatherController {
 
   private final HourlyWeatherService hourlyWeatherService;
@@ -31,18 +35,21 @@ public class HourlyWeatherController {
 
 
   @GetMapping
-  public ResponseEntity<ListHourlyWeatherResponse> listHourlyForecastByIPAddress(HttpServletRequest request) {
+  public ResponseEntity<ListHourlyWeatherResponse> listHourlyForecastByIPAddress(
+        HttpServletRequest request,
+        @RequestHeader(name = HOUR_HEADING) String currentHour
+  ) {
     String ipAddress = CommonUtility.getIPAddress(request);
 
     log.info("IP Address: {}", ipAddress);
 
     try {
-      int currentHour = Integer.parseInt(request.getHeader("X-Current-Hour"));
+      int currentHourOfDay = Integer.parseInt(currentHour);
       Location location = geolocationService.getLocation(ipAddress);
 
       log.info("Location: {}", location.getCode());
 
-      ListHourlyWeatherResponse hourlyWeather = hourlyWeatherService.getHourlyWeather(location, currentHour);
+      ListHourlyWeatherResponse hourlyWeather = hourlyWeatherService.getHourlyWeather(location, currentHourOfDay);
 
       if (hourlyWeather.getHourlyWeather().isEmpty()) {
         return ResponseEntity.noContent().build();
@@ -61,14 +68,14 @@ public class HourlyWeatherController {
   @GetMapping("/{locationCode}")
   public ResponseEntity<ListHourlyWeatherResponse> listHourlyForecastByLocationCode(
         @PathVariable String locationCode,
-        HttpServletRequest request
+        @RequestHeader(name = HOUR_HEADING) String currentHour
   ) {
     log.info("Location code: {}", locationCode);
 
     try {
-      int currentHour = Integer.parseInt(request.getHeader("X-Current-Hour"));
+      int currentHourOfDay = Integer.parseInt(currentHour);
 
-      ListHourlyWeatherResponse hourlyWeather = hourlyWeatherService.getHourlyWeather(locationCode, currentHour);
+      ListHourlyWeatherResponse hourlyWeather = hourlyWeatherService.getHourlyWeather(locationCode, currentHourOfDay);
 
       log.info("Hourly weather: {}", hourlyWeather.getHourlyWeather());
 
