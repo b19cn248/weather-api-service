@@ -17,8 +17,6 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
-import java.util.Date;
-
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.containsString;
@@ -153,7 +151,8 @@ class RealtimeWeatherControllerTests {
     RealtimeWeatherRequest request = RealtimeWeatherRequest.builder()
           .temperature(25)
           .humidity(33)
-          .precipitation(1013)
+          .precipitation(100)
+          .status("Cloudy")
           .build();
 
     Mockito.when(realtimeWeatherService.update("ABC_USA", request))
@@ -223,7 +222,6 @@ class RealtimeWeatherControllerTests {
           .windSpeed(20)
           .location(location)
           .build();
-
 
 
     Mockito.when(realtimeWeatherService.update("NYC_USA", request)).thenReturn(entity2DTO(realtimeWeather));

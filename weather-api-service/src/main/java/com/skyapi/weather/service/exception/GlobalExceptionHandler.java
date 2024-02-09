@@ -1,6 +1,7 @@
 package com.skyapi.weather.service.exception;
 
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.ConstraintViolationException;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
@@ -39,6 +40,35 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     log.error(ex.getMessage(), ex);
 
     return error;
+  }
+
+  @ExceptionHandler(BadRequestException.class)
+  @ResponseStatus(HttpStatus.BAD_REQUEST)
+  @ResponseBody
+  public ErrorDTO handlerBadRequestException(HttpServletRequest request, Exception ex) {
+    ErrorDTO error = ErrorDTO.builder()
+          .timeStamp(new Date())
+          .status(HttpStatus.BAD_REQUEST.value())
+          .errors(List.of(ex.getMessage()))
+          .path(request.getServletPath())
+          .build();
+
+    log.error(ex.getMessage(), ex);
+
+    return error;
+  }
+
+  @ExceptionHandler(ConstraintViolationException.class)
+  @ResponseStatus(HttpStatus.BAD_REQUEST)
+  @ResponseBody
+  public ErrorDTO handleConstraintViolationException(HttpServletRequest request, Exception ex) {
+
+    return ErrorDTO.builder()
+          .timeStamp(new Date())
+          .status(HttpStatus.BAD_REQUEST.value())
+          .errors(List.of(ex.getMessage()))
+          .path(request.getServletPath())
+          .build();
   }
 
   @Override

@@ -2,10 +2,11 @@ package com.skyapi.weather.common.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 
 @Entity
 @Table(name = "locations")
@@ -15,27 +16,36 @@ import lombok.NoArgsConstructor;
 @Builder
 public class Location {
 
-    @Id
-    @Column(length = 12, nullable = false, unique = true)
-    private String code;
+  @Id
+  @Column(length = 12, nullable = false, unique = true)
+  private String code;
 
-    @Column(length = 128, nullable = false)
-    private String cityName;
+  @Column(length = 128, nullable = false)
+  private String cityName;
 
-    @Column(length = 128)
-    private String regionName;
+  @Column(length = 128)
+  private String regionName;
 
-    @Column(length = 64, nullable = false)
-    private String countryName;
+  @Column(length = 64, nullable = false)
+  private String countryName;
 
-    @Column(length = 64, nullable = false)
-    private String countryCode;
+  @Column(length = 64, nullable = false)
+  private String countryCode;
 
-    private boolean enabled;
-    private boolean trashed;
+  private boolean enabled;
+  private boolean trashed;
 
-    @OneToOne(mappedBy = "location", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
-    @PrimaryKeyJoinColumn
-    @JsonIgnore
-    private RealtimeWeather realtimeWeather;
+  @OneToOne(mappedBy = "location", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+  @PrimaryKeyJoinColumn
+  @JsonIgnore
+  @EqualsAndHashCode.Exclude
+  private RealtimeWeather realtimeWeather;
+
+  @OneToMany(mappedBy = "id.location", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+  private List<HourlyWeather> hourlyWeathers = new ArrayList<>();
+
+  @Override
+  public String toString() {
+    return cityName + ", " + (((Objects.nonNull(regionName))) ? regionName + ", " : "") + countryName;
+  }
 }

@@ -5,17 +5,21 @@ import com.ip2location.IPResult;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
+import java.io.InputStream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class IP2LocationTests {
+class IP2LocationTests {
 
-  String DBPath = "ip2locdb/IP2LOCATION-LITE-DB3.BIN";
+  String DBPath = "/ip2locdb/IP2LOCATION-LITE-DB3.BIN";
 
   @Test
   void testInvalidIP() throws IOException {
     IP2Location ip2Location = new IP2Location();
-    ip2Location.Open(DBPath);
+    InputStream inputStream = getClass().getResourceAsStream(DBPath);
+    assert inputStream != null;
+    byte[] data = inputStream.readAllBytes();
+    ip2Location.Open(data);
 
     String ipAddress = "abc";
     IPResult ipResult = ip2Location.IPQuery(ipAddress);
@@ -29,7 +33,10 @@ public class IP2LocationTests {
   @Test
   void testValidIP() throws IOException {
     IP2Location ip2Location = new IP2Location();
-    ip2Location.Open(DBPath);
+    InputStream inputStream = getClass().getResourceAsStream(DBPath);
+    assert inputStream != null;
+    byte[] data = inputStream.readAllBytes();
+    ip2Location.Open(data);
 
     String ipAddress = " 171.236.56.131";
     IPResult ipResult = ip2Location.IPQuery(ipAddress);
