@@ -1,10 +1,7 @@
 package com.skyapi.weather.service.repository;
 
 import com.skyapi.weather.common.dto.response.LocationResponse;
-import com.skyapi.weather.common.entity.HourlyWeather;
-import com.skyapi.weather.common.entity.HourlyWeatherId;
-import com.skyapi.weather.common.entity.Location;
-import com.skyapi.weather.common.entity.RealtimeWeather;
+import com.skyapi.weather.common.entity.*;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
@@ -14,6 +11,7 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.test.annotation.Rollback;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -28,6 +26,9 @@ class LocationRepositoryTests {
 
   @Autowired
   private LocationRepository repository;
+
+  @Autowired
+  private DailyWeatherRepository dailyWeatherRepository;
 
   @Test
   @Order(1)
@@ -227,7 +228,7 @@ class LocationRepositoryTests {
 
     repository.save(location);
 
-    Assertions.assertThat(location.getHourlyWeathers()).hasSize(2);
+    Assertions.assertThat(location.getHourlyWeathers()).hasSize(5);
   }
 
   @Test
@@ -247,4 +248,49 @@ class LocationRepositoryTests {
     assertThat(location.getCode()).isEqualTo("NYC_USA");
     assertThat(location.getCityName()).isEqualTo("New York City");
   }
+
+  @Test
+  @Order(9)
+  void testAddDailyWeatherDataSuccess() {
+    String locationCode = "DELHI_IN";
+    Location location = repository.findByCode(locationCode).orElseThrow();
+
+    List<DailyWeather> dailyWeathersINDB = location.getDailyWeathers();
+
+    DailyWeather dailyWeather1 = DailyWeather.builder()
+          .id(new DailyWeatherId(10, 2, location))
+          .minTemp(30)
+          .maxTemp(40)
+          .precipitation(10)
+          .status("Sunny")
+          .build();
+    DailyWeather dailyWeather2 = DailyWeather.builder()
+          .id(new DailyWeatherId(11, 2, location))
+          .minTemp(26)
+          .maxTemp(35)
+          .precipitation(20)
+          .status("Cloudy")
+          .build();
+
+    List<DailyWeather> dailyWeathersRequest = new ArrayList<>(List.of(dailyWeather1, dailyWeather2));
+    List<DailyWeather> dailyWeathersDeleted = new ArrayList<>();
+
+    for (DailyWeather dailyWeather : dailyWeathersINDB) {
+      if (!dailyWeathersRequest.contains(dailyWeather)) {
+        dailyWeathersDeleted.add(dailyWeather);
+      }
+    }
+
+
+    for (DailyWeather dailyWeather : dailyWeathersDeleted) {
+      dailyWeathersINDB.remove(dailyWeather);
+    }
+
+    dailyWeatherRepository.saveAll(dailyWeathersRequest);
+
+    Location savedLocation = repository.save(location);
+
+    Assertions.assertThat(savedLocation.getDailyWeathers()).hasSize(2);
+  }
+
 }

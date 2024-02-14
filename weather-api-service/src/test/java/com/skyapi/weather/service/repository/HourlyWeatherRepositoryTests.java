@@ -76,14 +76,14 @@ class HourlyWeatherRepositoryTests {
     List<HourlyWeather> hourlyWeathers = hourlyWeatherRepository.findByIdLocationCode(locationCode, currentHourOfDay);
 
     assertThat(hourlyWeathers).isNotNull()
-          .hasSize(2);
+          .hasSize(5);
   }
 
   @Test
   @Order(4)
   void testFindByIdLocationCodeNotFound() {
     String locationCode = "DELHI_IN";
-    int currentHourOfDay = 12;
+    int currentHourOfDay = 18;
 
     List<HourlyWeather> hourlyWeathers = hourlyWeatherRepository.findByIdLocationCode(locationCode, currentHourOfDay);
 

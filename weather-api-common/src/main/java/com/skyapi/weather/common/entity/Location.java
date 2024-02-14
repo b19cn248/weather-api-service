@@ -44,6 +44,9 @@ public class Location {
   @OneToMany(mappedBy = "id.location", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
   private List<HourlyWeather> hourlyWeathers = new ArrayList<>();
 
+  @OneToMany(mappedBy = "id.location", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+  private List<DailyWeather> dailyWeathers = new ArrayList<>();
+
   @Override
   public String toString() {
     return cityName + ", " + (((Objects.nonNull(regionName))) ? regionName + ", " : "") + countryName;
