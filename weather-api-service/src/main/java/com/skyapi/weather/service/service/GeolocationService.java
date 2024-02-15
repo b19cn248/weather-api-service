@@ -43,7 +43,7 @@ public class GeolocationService {
             .countryCode(ipResult.getCountryShort())
             .build();
     } catch (IOException e) {
-      throw new GeolocationNotFoundException("Error querying IP database", e);
+      throw new GeolocationNotFoundException("Error querying IP database");
     }
   }
 }

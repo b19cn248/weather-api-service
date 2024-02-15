@@ -38,7 +38,7 @@ class IP2LocationTests {
     byte[] data = inputStream.readAllBytes();
     ip2Location.Open(data);
 
-    String ipAddress = " 171.236.56.131";
+    String ipAddress = "171.236.56.131";
     IPResult ipResult = ip2Location.IPQuery(ipAddress);
 
     System.out.println(ipResult);

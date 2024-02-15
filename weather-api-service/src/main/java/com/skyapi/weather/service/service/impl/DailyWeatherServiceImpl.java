@@ -1,17 +1,21 @@
 package com.skyapi.weather.service.service.impl;
 
-import com.skyapi.weather.common.dto.response.DailyWeatherResponse;
+import com.skyapi.weather.common.dto.request.DailyWeatherRequest;
 import com.skyapi.weather.common.dto.response.ListDailyWeatherResponse;
 import com.skyapi.weather.common.entity.DailyWeather;
+import com.skyapi.weather.common.entity.DailyWeatherId;
 import com.skyapi.weather.common.entity.Location;
 import com.skyapi.weather.service.exception.LocationNotFoundException;
 import com.skyapi.weather.service.repository.DailyWeatherRepository;
 import com.skyapi.weather.service.repository.LocationRepository;
 import com.skyapi.weather.service.service.DailyWeatherService;
+import com.skyapi.weather.service.service.MapperService;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -22,6 +26,8 @@ public class DailyWeatherServiceImpl implements DailyWeatherService {
   private final LocationRepository locationRepository;
 
   private final DailyWeatherRepository repository;
+
+  private final MapperService mapperService;
 
   @Override
   public ListDailyWeatherResponse getDailyWeather(Location location) {
@@ -38,9 +44,12 @@ public class DailyWeatherServiceImpl implements DailyWeatherService {
     }
 
     String locationCode = locationInDB.getCode();
-    List<DailyWeather> hourlyWeathers = repository.findByIdLocationCode(locationCode);
+    List<DailyWeather> dailyWeathers = repository.findByIdLocationCode(locationCode);
 
-    return convertToResponse(hourlyWeathers, location);
+    return ListDailyWeatherResponse.builder()
+          .location(location.toString())
+          .dailyWeather(mapperService.convertToResponse(dailyWeathers, location))
+          .build();
   }
 
   @Override
@@ -52,30 +61,61 @@ public class DailyWeatherServiceImpl implements DailyWeatherService {
 
     List<DailyWeather> dailyWeathers = repository.findByIdLocationCode(location.getCode());
 
-    return convertToResponse(dailyWeathers, location);
+    return ListDailyWeatherResponse.builder()
+          .location(location.toString())
+          .dailyWeather(mapperService.convertToResponse(dailyWeathers, location))
+          .build();
   }
 
-  private ListDailyWeatherResponse convertToResponse(List<DailyWeather> dailyWeathers, Location location) {
+  @Override
+  @Transactional
+  public ListDailyWeatherResponse update(String locationCode, List<DailyWeatherRequest> dailyWeatherRequestList) {
+    log.info("update: {}", locationCode);
 
-    if (dailyWeathers == null || dailyWeathers.isEmpty()) {
-      return new ListDailyWeatherResponse();
+    Location location = locationRepository.findByCode(locationCode)
+          .orElseThrow(() -> new LocationNotFoundException("Location not found for code: " + locationCode));
+
+    List<DailyWeather> dailyWeathersINDB = location.getDailyWeathers();
+
+    List<DailyWeather> dailyWeathersInRequest = convertToEntity(dailyWeatherRequestList, location);
+
+    List<DailyWeather> dailyWeathersToDelete = new ArrayList<>();
+
+    for (DailyWeather dailyWeather : dailyWeathersINDB) {
+      if (!dailyWeathersInRequest.contains(dailyWeather)) {
+        dailyWeathersToDelete.add(dailyWeather.copy());
+      }
     }
 
-    ListDailyWeatherResponse response = new ListDailyWeatherResponse();
+    for (DailyWeather dailyWeather : dailyWeathersToDelete) {
+      dailyWeathersINDB.remove(dailyWeather);
+    }
 
-    response.setLocation(location.toString());
+    repository.saveAll(dailyWeathersInRequest);
 
-    for (DailyWeather dailyWeather : dailyWeathers) {
-      response.addDailyWeather(DailyWeatherResponse.builder()
-            .dayOfMonth(dailyWeather.getId().getDayOfMonth())
-            .month(dailyWeather.getId().getMonth())
-            .minTemp(dailyWeather.getMinTemp())
-            .maxTemp(dailyWeather.getMaxTemp())
-            .precipitation(dailyWeather.getPrecipitation())
-            .status(dailyWeather.getStatus())
+    return ListDailyWeatherResponse.builder()
+          .location(location.toString())
+          .dailyWeather(mapperService.convertToResponse(dailyWeathersInRequest, location))
+          .build();
+  }
+
+  private List<DailyWeather> convertToEntity(List<DailyWeatherRequest> dailyWeatherRequestList, Location location) {
+    List<DailyWeather> dailyWeathers = new ArrayList<>();
+
+    for (DailyWeatherRequest dailyWeatherRequest : dailyWeatherRequestList) {
+      dailyWeathers.add(DailyWeather.builder()
+            .id(DailyWeatherId.builder()
+                  .dayOfMonth(dailyWeatherRequest.getDayOfMonth())
+                  .month(dailyWeatherRequest.getMonth())
+                  .location(location)
+                  .build())
+            .minTemp(dailyWeatherRequest.getMinTemp())
+            .maxTemp(dailyWeatherRequest.getMaxTemp())
+            .precipitation(dailyWeatherRequest.getPrecipitation())
+            .status(dailyWeatherRequest.getStatus())
             .build());
     }
 
-    return response;
+    return dailyWeathers;
   }
 }

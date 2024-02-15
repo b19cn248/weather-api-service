@@ -1,14 +1,16 @@
 package com.skyapi.weather.service.exception;
 
-public class LocationNotFoundException extends RuntimeException {
+import com.skyapi.weather.service.exception.base.NotFoundException;
 
-    public LocationNotFoundException() {
-        super("Location not Found");
-    }
+public class LocationNotFoundException extends NotFoundException {
 
-    public LocationNotFoundException(String message) {
-        super(message);
-    }
+  public LocationNotFoundException() {
+    super("Location not Found");
+  }
+
+  public LocationNotFoundException(String message) {
+    super(message);
+  }
 
 
 }

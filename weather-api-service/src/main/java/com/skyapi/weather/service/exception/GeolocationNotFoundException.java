@@ -1,11 +1,9 @@
 package com.skyapi.weather.service.exception;
 
-public class GeolocationNotFoundException extends RuntimeException{
-    public GeolocationNotFoundException(String message, Throwable cause) {
-        super(message, cause);
-    }
+import com.skyapi.weather.service.exception.base.BadRequestException;
 
-    public GeolocationNotFoundException(String message) {
-        super(message);
-    }
+public class GeolocationNotFoundException extends BadRequestException {
+  public GeolocationNotFoundException(String message) {
+    super(message);
+  }
 }

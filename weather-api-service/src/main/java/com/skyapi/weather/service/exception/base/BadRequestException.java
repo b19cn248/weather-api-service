@@ -1,4 +1,4 @@
-package com.skyapi.weather.service.exception;
+package com.skyapi.weather.service.exception.base;
 
 public class BadRequestException extends RuntimeException {
 

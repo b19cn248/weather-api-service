@@ -3,7 +3,7 @@ package com.skyapi.weather.service.controller;
 import com.skyapi.weather.common.dto.request.HourlyWeatherRequest;
 import com.skyapi.weather.common.dto.response.ListHourlyWeatherResponse;
 import com.skyapi.weather.common.entity.Location;
-import com.skyapi.weather.service.exception.BadRequestException;
+import com.skyapi.weather.service.exception.base.BadRequestException;
 import com.skyapi.weather.service.exception.GeolocationNotFoundException;
 import com.skyapi.weather.service.exception.LocationNotFoundException;
 import com.skyapi.weather.service.service.GeolocationService;

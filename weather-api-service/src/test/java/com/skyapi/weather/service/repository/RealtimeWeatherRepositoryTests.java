@@ -57,8 +57,8 @@ class RealtimeWeatherRepositoryTests {
 
   @Test
   void testFindByCountryCodeAndCitySuccess() {
-    String countryCode = "US";
-    String city = "New York City";
+    String countryCode = "IN";
+    String city = "Delhi";
 
     RealtimeWeather weather = repository.findByCountryCodeAndCity(countryCode, city);
 
@@ -85,7 +85,7 @@ class RealtimeWeatherRepositoryTests {
 
   @Test
   void testFindByLocationSuccess() {
-    String locationCode = "NYC_USA";
+    String locationCode = "DELHI_IN";
 
     RealtimeWeather weather = repository.findByLocationCode(locationCode);
 

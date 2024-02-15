@@ -1,7 +1,6 @@
 package com.skyapi.weather.service.service.impl;
 
 import com.skyapi.weather.common.dto.request.HourlyWeatherRequest;
-import com.skyapi.weather.common.dto.response.HourlyWeatherResponse;
 import com.skyapi.weather.common.dto.response.ListHourlyWeatherResponse;
 import com.skyapi.weather.common.entity.HourlyWeather;
 import com.skyapi.weather.common.entity.HourlyWeatherId;
@@ -10,6 +9,7 @@ import com.skyapi.weather.service.exception.LocationNotFoundException;
 import com.skyapi.weather.service.repository.HourlyWeatherRepository;
 import com.skyapi.weather.service.repository.LocationRepository;
 import com.skyapi.weather.service.service.HourlyWeatherService;
+import com.skyapi.weather.service.service.MapperService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -24,6 +24,7 @@ public class HourlyWeatherServiceImpl implements HourlyWeatherService {
 
   private final HourlyWeatherRepository repository;
   private final LocationRepository locationRepository;
+  private final MapperService mapperService;
 
   @Override
   public ListHourlyWeatherResponse getHourlyWeather(Location location, int currentHourOfDay) {
@@ -42,7 +43,10 @@ public class HourlyWeatherServiceImpl implements HourlyWeatherService {
     String locationCode = locationInDB.getCode();
     List<HourlyWeather> hourlyWeathers = repository.findByIdLocationCode(locationCode, currentHourOfDay);
 
-    return convertToResponse(hourlyWeathers);
+    return ListHourlyWeatherResponse.builder()
+          .location(location.toString())
+          .hourlyWeather(mapperService.convertToResponse(hourlyWeathers))
+          .build();
   }
 
   @Override
@@ -54,7 +58,10 @@ public class HourlyWeatherServiceImpl implements HourlyWeatherService {
 
     List<HourlyWeather> hourlyWeathers = repository.findByIdLocationCode(location.getCode(), currentHourOfDay);
 
-    return convertToResponse(hourlyWeathers);
+    return ListHourlyWeatherResponse.builder()
+          .location(location.toString())
+          .hourlyWeather(mapperService.convertToResponse(hourlyWeathers))
+          .build();
   }
 
   @Override
@@ -83,7 +90,10 @@ public class HourlyWeatherServiceImpl implements HourlyWeatherService {
 
     repository.saveAll(hourlyWeathersInRequest);
 
-    return convertToResponse(hourlyWeathersInRequest);
+    return ListHourlyWeatherResponse.builder()
+          .location(location.toString())
+          .hourlyWeather(mapperService.convertToResponse(hourlyWeathersInRequest))
+          .build();
   }
 
   private List<HourlyWeather> convertToEntity(List<HourlyWeatherRequest> hourlyWeatherList, Location location) {
@@ -102,31 +112,6 @@ public class HourlyWeatherServiceImpl implements HourlyWeatherService {
     ));
 
     return hourlyWeathers;
-  }
-
-  private ListHourlyWeatherResponse convertToResponse(List<HourlyWeather> hourlyWeathers) {
-
-    log.debug("Converting hourly weathers to response: {}", hourlyWeathers);
-
-    if (hourlyWeathers.isEmpty()) {
-      return new ListHourlyWeatherResponse();
-    }
-
-    ListHourlyWeatherResponse response = new ListHourlyWeatherResponse();
-
-    Location location = hourlyWeathers.get(0).getId().getLocation();
-
-    response.setLocation(location.toString());
-
-    hourlyWeathers.forEach(hourlyWeather -> response.addHourlyWeather(
-          HourlyWeatherResponse.builder()
-                .hourOfDay(hourlyWeather.getId().getHourOfDay())
-                .temperature(hourlyWeather.getTemperature())
-                .precipitation(hourlyWeather.getPrecipitation())
-                .status(hourlyWeather.getStatus())
-                .build()
-    ));
-    return response;
   }
 
 }

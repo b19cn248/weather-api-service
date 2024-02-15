@@ -1,5 +1,6 @@
 package com.skyapi.weather.service.controller;
 
+import com.skyapi.weather.common.dto.request.DailyWeatherRequest;
 import com.skyapi.weather.common.dto.response.ListDailyWeatherResponse;
 import com.skyapi.weather.common.entity.Location;
 import com.skyapi.weather.service.exception.GeolocationNotFoundException;
@@ -11,10 +12,9 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/daily")
@@ -60,6 +60,28 @@ public class DailyWeatherController {
 
     try {
       ListDailyWeatherResponse dailyWeather = dailyWeatherService.getDailyWeather(locationCode);
+
+      if (dailyWeather.getDailyWeather().isEmpty()) {
+        return ResponseEntity.noContent().build();
+      }
+
+      return ResponseEntity.ok(dailyWeather);
+
+    } catch (LocationNotFoundException e) {
+      return ResponseEntity.notFound().build();
+    }
+  }
+
+  @PutMapping("/{locationCode}")
+  public ResponseEntity<ListDailyWeatherResponse> updateDailyForecastByLocationCode(
+        @PathVariable String locationCode,
+        @RequestBody List<DailyWeatherRequest> request
+  ) {
+
+    log.info("updateDailyForecastByLocationCode with Location code: {}", locationCode);
+
+    try {
+      ListDailyWeatherResponse dailyWeather = dailyWeatherService.update(locationCode, request);
 
       if (dailyWeather.getDailyWeather().isEmpty()) {
         return ResponseEntity.noContent().build();

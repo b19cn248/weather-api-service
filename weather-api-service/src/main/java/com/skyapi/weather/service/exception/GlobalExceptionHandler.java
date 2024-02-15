@@ -1,5 +1,7 @@
 package com.skyapi.weather.service.exception;
 
+import com.skyapi.weather.service.exception.base.BadRequestException;
+import com.skyapi.weather.service.exception.base.NotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
 import lombok.NonNull;
@@ -46,6 +48,22 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
   @ResponseStatus(HttpStatus.BAD_REQUEST)
   @ResponseBody
   public ErrorDTO handlerBadRequestException(HttpServletRequest request, Exception ex) {
+    ErrorDTO error = ErrorDTO.builder()
+          .timeStamp(new Date())
+          .status(HttpStatus.BAD_REQUEST.value())
+          .errors(List.of(ex.getMessage()))
+          .path(request.getServletPath())
+          .build();
+
+    log.error(ex.getMessage(), ex);
+
+    return error;
+  }
+
+  @ExceptionHandler(NotFoundException.class)
+  @ResponseStatus(HttpStatus.NOT_FOUND)
+  @ResponseBody
+  public ErrorDTO handlerNotFoundException(HttpServletRequest request, Exception ex) {
     ErrorDTO error = ErrorDTO.builder()
           .timeStamp(new Date())
           .status(HttpStatus.BAD_REQUEST.value())
